@@ -1,13 +1,17 @@
-import cgi
 import json
 import os.path
 import re
 import sys
 import uuid
 from tkinter import messagebox as mdialog
-
 from docxtpl import DocxTemplate
 
+try:
+    # python3
+    from html import escape as html_escape
+except ImportError:
+    # python2
+    from cgi import escape as html_escape
 
 _illegal_unichrs = [(0x00, 0x08), (0x0B, 0x0C), (0x0E, 0x1F),
                     (0x7F, 0x84), (0x86, 0x9F),
@@ -32,12 +36,13 @@ class Docx(object):
         self.template_url = template_url
 
     def read_data(self):
-        with open(self.json_url, 'r') as f:
+        with open(self.json_url, 'r', encoding='utf8') as f:
             load_data = json.load(f)
 
-        json_data = json.dumps(load_data)
-        json_data = cgi.escape(json_data)
+        json_data = json.dumps(load_data, ensure_ascii=False)
+        json_data = html_escape(json_data, quote=False)
         json_data = json_data.replace('\n', '\\n')
+        print(json_data)
         dict_data = json.loads(json_data)
 
         for d in dict_data:
